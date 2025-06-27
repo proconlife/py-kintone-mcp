@@ -31,7 +31,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         if form_fields:
             # フォーム設定の更新
             form_payload = {"app": app_id, "properties": form_fields}
-            kintone_request('POST', '/k/v1/app/form/fields.json', json=form_payload)
+            kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
