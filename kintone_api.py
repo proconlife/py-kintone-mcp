@@ -8,6 +8,7 @@ KINTONE_SUBDOMAIN = os.getenv('KINTONE_SUBDOMAIN')
 KINTONE_API_TOKEN = os.getenv('KINTONE_API_TOKEN')
 KINTONE_USERNAME = os.getenv('KINTONE_USERNAME')
 KINTONE_PASSWORD = os.getenv('KINTONE_PASSWORD')
+KINTONE_DOMAIN = os.getenv('KINTONE_DOMAIN', 'cybozu.com')
 
 def _get_kintone_headers():
     headers = {'Content-Type': 'application/json'}
