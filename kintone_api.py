@@ -1,5 +1,6 @@
 import os
 import requests
+import base64
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,16 +11,20 @@ KINTONE_USERNAME = os.getenv('KINTONE_USERNAME')
 KINTONE_PASSWORD = os.getenv('KINTONE_PASSWORD')
 KINTONE_DOMAIN = os.getenv('KINTONE_DOMAIN', 'cybozu.com')
 
-def _get_kintone_headers():
-    headers = {'Content-Type': 'application/json'}
+def _get_kintone_headers(method):
+    headers = {}
+    if method not in ['GET', 'DELETE']:
+        headers['Content-Type'] = 'application/json'
+    # 1) APIトークン
     if KINTONE_API_TOKEN:
         headers['X-Cybozu-API-Token'] = KINTONE_API_TOKEN
-    return headers
-
-def _get_kintone_auth():
+    # 2) ユーザーパスワード認証（優先度は APIトークン < パスワード）
     if KINTONE_USERNAME and KINTONE_PASSWORD:
-        return (KINTONE_USERNAME, KINTONE_PASSWORD)
-    return None
+        auth_str = f"{KINTONE_USERNAME}:{KINTONE_PASSWORD}"
+        headers['X-Cybozu-Authorization'] = base64.b64encode(
+            auth_str.encode()
+        ).decode()
+    return headers
 
 def kintone_request(method, path, json=None):
     if not KINTONE_SUBDOMAIN:
@@ -28,10 +33,12 @@ def kintone_request(method, path, json=None):
     url = f"https://{KINTONE_SUBDOMAIN}.{KINTONE_DOMAIN}{path}"
     print(f"DEBUG: Kintone API URL: {url}")
     headers = _get_kintone_headers(method)
-    auth = _get_kintone_auth()
 
     try:
-        response = requests.request(method, url, headers=headers, json=json, auth=auth)
+        if method in ['GET', 'DELETE']:
+            response = requests.request(method, url, headers=headers, timeout=30)
+        else:
+            response = requests.request(method, url, headers=headers, json=json, timeout=30)
         response.raise_for_status()  # HTTPエラーが発生した場合に例外を発生させる
         return response.json()
     except requests.exceptions.HTTPError as e:
