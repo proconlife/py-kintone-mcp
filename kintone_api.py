@@ -15,15 +15,14 @@ def _get_kintone_headers(method):
     headers = {}
     if method not in ['GET', 'DELETE']:
         headers['Content-Type'] = 'application/json'
-    # 1) APIトークン
-    if KINTONE_API_TOKEN:
-        headers['X-Cybozu-API-Token'] = KINTONE_API_TOKEN
-    # 2) ユーザーパスワード認証（優先度は APIトークン < パスワード）
     if KINTONE_USERNAME and KINTONE_PASSWORD:
-        auth_str = f"{KINTONE_USERNAME}:{KINTONE_PASSWORD}"
+        # パスワード認証
         headers['X-Cybozu-Authorization'] = base64.b64encode(
-            auth_str.encode()
+            f"{KINTONE_USERNAME}:{KINTONE_PASSWORD}".encode()
         ).decode()
+    elif KINTONE_API_TOKEN:
+        # APIトークン認証
+        headers['X-Cybozu-API-Token'] = KINTONE_API_TOKEN
     return headers
 
 def kintone_request(method, path, json=None):
@@ -42,6 +41,12 @@ def kintone_request(method, path, json=None):
         response.raise_for_status()  # HTTPエラーが発生した場合に例外を発生させる
         return response.json()
     except requests.exceptions.HTTPError as e:
+        print("==== DEBUG INFO ====")
+        print("URL:", url)
+        print("Headers:", headers)
+        print("Status:", e.response.status_code)
+        print("Body:", e.response.text)
+        print("====================")
         print(f"HTTP Error: {e.response.status_code} - {e.response.text}")
         raise
     except requests.exceptions.ConnectionError as e:

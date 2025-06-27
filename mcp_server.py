@@ -36,7 +36,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         if app_permissions:
             # アプリ権限の更新
             permission_payload = {"app": app_id, "rights": app_permissions}
-            kintone_request('PUT', '/k/v1/app/acl.json', json=permission_payload)
+            kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
         deploy_payload = {"apps": [{"app": app_id}]}
@@ -44,7 +44,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request('GET', f'/k/v1/app/status.json?app={app_id}')
+            deploy_status = kintone_request('GET', f'/k/v1/preview/app/deploy.json?apps[0]={app_id}')
             if deploy_status['apps'][0]['status'] == 'SUCCESS':
                 break
             elif deploy_status['apps'][0]['status'] == 'FAIL':
