@@ -40,11 +40,11 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
 
         # アプリの公開
         deploy_payload = {"apps": [{"app": app_id}]}
-        kintone_request('POST', '/k/v1/app/deploy.json', json=deploy_payload)
+        kintone_request('POST', '/k/v1/preview/app/deploy.json', json=deploy_payload)
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request('GET', '/k/v1/app/status.json', json={'apps': [app_id]})
+            deploy_status = kintone_request('GET', f'/k/v1/app/status.json?app={app_id}')
             if deploy_status['apps'][0]['status'] == 'SUCCESS':
                 break
             elif deploy_status['apps'][0]['status'] == 'FAIL':
