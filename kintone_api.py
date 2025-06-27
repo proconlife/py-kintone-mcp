@@ -24,8 +24,9 @@ def kintone_request(method, path, json=None):
     if not KINTONE_SUBDOMAIN:
         raise ValueError("KINTONE_SUBDOMAIN is not set in environment variables.")
 
-    url = f"https://{KINTONE_SUBDOMAIN}.kintone.com{path}"
-    headers = _get_kintone_headers()
+    url = f"https://{KINTONE_SUBDOMAIN}.{KINTONE_DOMAIN}{path}"
+    print(f"DEBUG: Kintone API URL: {url}")
+    headers = _get_kintone_headers(method)
     auth = _get_kintone_auth()
 
     try:
