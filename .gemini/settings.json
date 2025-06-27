@@ -2,7 +2,7 @@
   "mcpServers": {
     "kintone": {
       "command": "python",
-      "args": ["mcp_server.py"],
+      "args": ["-m", "dotenv", "run", "python", "mcp_server.py"],
       "cwd": ".",
       "trust": true
     }
