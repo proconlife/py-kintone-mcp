@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import os
-from modelcontextprotocol import ModelContextProtocol
+from mcp.server.fastmcp import FastMCP
 
 # .env ファイルから環境変数を読み込む
 load_dotenv()
 
 app = Flask(__name__)
-mcp = ModelContextProtocol()
+mcp = FastMCP()
 
 @app.route('/')
 def hello_world():
