@@ -30,7 +30,7 @@ def kintone_request(method, path, json=None):
         raise ValueError("KINTONE_SUBDOMAIN is not set in environment variables.")
 
     url = f"https://{KINTONE_SUBDOMAIN}.{KINTONE_DOMAIN}{path}"
-    print(f"DEBUG: Kintone API URL: {url}")
+    
     headers = _get_kintone_headers(method)
 
     try:
@@ -64,7 +64,7 @@ def get_app_revision(app_id: int) -> int:
     指定されたアプリIDの最新のリビジョン番号を取得します。
     """
     response = kintone_request('GET', f'/k/v1/app.json?id={app_id}')
-    print(f"DEBUG: get_app_revision response: {response}")
+    
     if 'app' not in response:
         raise ValueError(f"App information not found in kintone API response for app_id {app_id}. Response: {response}")
     if 'revision' not in response['app']:
