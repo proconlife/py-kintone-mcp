@@ -58,3 +58,10 @@ def kintone_request(method, path, json=None):
     except requests.exceptions.RequestException as e:
         print(f"Request Error: {e}")
         raise
+
+def get_app_revision(app_id: int) -> int:
+    """
+    指定されたアプリIDの最新のリビジョン番号を取得します。
+    """
+    response = kintone_request('GET', f'/k/v1/app.json?id={app_id}')
+    return response['revision']

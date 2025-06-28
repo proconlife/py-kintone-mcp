@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from mcp.server.fastmcp import FastMCP
-from kintone_api import kintone_request
+from kintone_api import kintone_request, get_app_revision
 
 # .env ファイルから環境変数を読み込む
 load_dotenv()
@@ -58,13 +58,12 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         raise
 
 @mcp.tool()
-def update_kintone_app(app_id: int, revision: int, form_fields: dict = None, app_permissions: dict = None):
+def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: dict = None):
     """
     kintoneアプリを変更します。
 
     Args:
         app_id (int): 変更するアプリのID。
-        revision (int): アプリのリビジョン番号。
         form_fields (dict, optional): アプリのフォーム設定。kintone REST APIのAdd Form Fieldsのrequest body形式。
                                       例: {"properties": {"my_text_field": {"type": "SINGLE_LINE_TEXT", "code": "my_text_field", "label": "My Text Field"}}}
                                       `properties` キーの下にフィールドコードをキーとした辞書を配置してください。
@@ -74,14 +73,21 @@ def update_kintone_app(app_id: int, revision: int, form_fields: dict = None, app
         dict: 変更されたアプリのIDを含む辞書。
     """
     try:
+        revision = get_app_revision(app_id)
         if form_fields:
             # フォーム設定の更新
-            form_payload = {"app": app_id, "properties": form_fields.get("properties", {}), "revision": revision}
+            if "properties" not in form_fields:
+                form_payload = {"app": app_id, "properties": form_fields, "revision": revision}
+            else:
+                form_payload = {"app": app_id, "properties": form_fields["properties"], "revision": revision}
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
-            permission_payload = {"app": app_id, "rights": app_permissions, "revision": revision}
+            if "rights" not in app_permissions:
+                permission_payload = {"app": app_id, "rights": app_permissions, "revision": revision}
+            else:
+                permission_payload = {"app": app_id, "rights": app_permissions["rights"], "revision": revision}
             kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
