@@ -59,14 +59,27 @@ def kintone_request(method, path, json=None):
         print(f"Request Error: {e}")
         raise
 
-def get_app_revision(app_id: int) -> int:
+def get_app_revision(app_id: int) -> str:
     """
-    指定されたアプリIDの最新のリビジョン番号を取得します。
+    Return the current revision of the app settings that are LIVE.
+    Falls back to preview if live settings are locked.
     """
-    response = kintone_request('GET', f'/k/v1/app.json?id={app_id}')
-    
-    if 'app' not in response:
-        raise ValueError(f"App information not found in kintone API response for app_id {app_id}. Response: {response}")
-    if 'revision' not in response['app']:
-        raise ValueError(f"Revision not found in app information for app_id {app_id}. Response: {response}")
-    return response['app']['revision']
+    base = f"https://{KINTONE_SUBDOMAIN}.{KINTONE_DOMAIN}/k"
+    headers = _get_kintone_headers("GET")
+    for path in ("/v1/app/status.json",  # live
+                 "/v1/preview/app/status.json"):  # pre-deploy
+        resp = requests.get(
+            f"{base}{path}",
+            headers=headers,
+            params={"app": app_id},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if "revision" in data:           # formally defined key
+            return data["revision"]
+
+    raise RuntimeError(
+        f"Revision not found for app {app_id}. "
+        f"Response bodies: {data}"
+    )
