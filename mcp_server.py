@@ -30,7 +30,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
 
         if form_fields:
             # フォーム設定の更新
-            form_payload = {"app": app_id, "properties": form_fields}
+            form_payload = {"app": app_id, "properties": form_fields.get("properties", {})}
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
@@ -58,7 +58,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         raise
 
 @mcp.tool()
-def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: dict = None):
+def update_kintone_app(app_id: int, revision: int, form_fields: dict = None, app_permissions: dict = None):
     """
     kintoneアプリを変更します。
 
@@ -73,12 +73,12 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
     try:
         if form_fields:
             # フォーム設定の更新
-            form_payload = {"app": app_id, "properties": form_fields}
+            form_payload = {"app": app_id, "properties": form_fields.get("properties", {}), "revision": revision}
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
-            permission_payload = {"app": app_id, "rights": app_permissions}
+            permission_payload = {"app": app_id, "rights": app_permissions, "revision": revision}
             kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
