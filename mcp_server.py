@@ -64,7 +64,10 @@ def update_kintone_app(app_id: int, revision: int, form_fields: dict = None, app
 
     Args:
         app_id (int): 変更するアプリのID。
+        revision (int): アプリのリビジョン番号。
         form_fields (dict, optional): アプリのフォーム設定。kintone REST APIのAdd Form Fieldsのrequest body形式。
+                                      例: {"properties": {"my_text_field": {"type": "SINGLE_LINE_TEXT", "code": "my_text_field", "label": "My Text Field"}}}
+                                      `properties` キーの下にフィールドコードをキーとした辞書を配置してください。
         app_permissions (dict, optional): アプリのアクセス権限設定。kintone REST APIのUpdate App Permissionsのrequest body形式。
 
     Returns:
