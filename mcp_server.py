@@ -25,31 +25,31 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         "name": app_name
     }
     try:
-        response = kintone_request("POST", "/k/v1/preview/app.json", json=payload)
-        app_id = response.get("app")
+        response = kintone_request('POST', '/k/v1/preview/app.json', json=payload)
+        app_id = response.get('app')
 
         if form_fields:
             if not form_fields.get("properties"):
                 raise ValueError("form_fields.properties が空です")
             # フォーム設定の更新
             form_payload = {"app": app_id, "properties": form_fields.get("properties", {})}
-            kintone_request("PUT", "/k/v1/preview/app/form/fields.json", json=form_payload)
+            kintone_request('POST', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
             permission_payload = {"app": app_id, "rights": app_permissions}
-            kintone_request("PUT", "/k/v1/preview/app/acl.json", json=permission_payload)
+            kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
         deploy_payload = {"apps": [{"app": app_id}]}
-        kintone_request("POST", "/k/v1/preview/app/deploy.json", json=deploy_payload)
+        kintone_request('POST', '/k/v1/preview/app/deploy.json', json=deploy_payload)
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request("GET", "/k/v1/preview/app/deploy.json", params={"app": app_id})
-            if deploy_status["apps"][0]["status"] == "SUCCESS":
+            deploy_status = kintone_request('GET', '/k/v1/preview/app/deploy.json', params={'app': app_id})
+            if deploy_status['apps'][0]['status'] == 'SUCCESS':
                 break
-            elif deploy_status["apps"][0]["status"] == "FAIL":
+            elif deploy_status['apps'][0]['status'] == 'FAIL':
                 raise Exception("App deployment failed.")
             import time
             time.sleep(5) # 5秒待機
@@ -90,7 +90,7 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
                 "revision": revision,
                 "properties": merged_form_fields
             }
-            kintone_request("PUT", "/k/v1/preview/app/form/fields.json", json=form_payload)
+            kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
@@ -99,18 +99,18 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
                 "revision": revision,
                 "rights": (app_permissions.get("rights") or app_permissions)
             }
-            kintone_request("PUT", "/k/v1/preview/app/acl.json", json=permission_payload)
+            kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
         deploy_payload = {"apps": [{"app": app_id}]}
-        kintone_request("POST", "/k/v1/preview/app/deploy.json", json=deploy_payload)
+        kintone_request('POST', '/k/v1/preview/app/deploy.json', json=deploy_payload)
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request("GET", "/k/v1/preview/app/deploy.json", params={"app": app_id})
-            if deploy_status["apps"][0]["status"] == "SUCCESS":
+            deploy_status = kintone_request('GET', '/k/v1/preview/app/deploy.json', params={'app': app_id})
+            if deploy_status['apps'][0]['status'] == 'SUCCESS':
                 break
-            elif deploy_status["apps"][0]["status"] == "FAIL":
+            elif deploy_status['apps'][0]['status'] == 'FAIL':
                 raise Exception("App deployment failed.")
             import time
             time.sleep(5) # 5秒待機
@@ -122,14 +122,23 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
 
 if __name__ == "__main__":
     # テスト用のapp_idを設定してください
-    TEST_APP_ID = 52 # 実際のアプリIDに置き換えてください
+    # TEST_APP_ID = 52 # 実際のアプリIDに置き換えてください
 
-    print(f"Testing update_kintone_app for app_id: {TEST_APP_ID}")
+    # print(f"Testing update_kintone_app for app_id: {TEST_APP_ID}")
+    # try:
+    #     # 既存のテキストフィールドのラベルを変更する例
+    #     test_form_fields = {"properties": {"foo": {"type": "SINGLE_LINE_TEXT", "code": "foo", "label": "Foo"}}}
+    #     result = update_kintone_app(app_id=TEST_APP_ID, form_fields=test_form_fields)
+    #     print(f"Test successful: {result}")
+    # except Exception as e:
+    #     print(f"Test failed: {e}")
+
+    print("Testing create_kintone_app...")
     try:
-        # 既存のテキストフィールドのラベルを変更する例
-        test_form_fields = {"properties": {"foo": {"type": "SINGLE_LINE_TEXT", "code": "foo", "label": "Foo"}}}
-        result = update_kintone_app(app_id=TEST_APP_ID, form_fields=test_form_fields)
-        print(f"Test successful: {result}")
+        app_name = "Test App by Gemini"
+        form_fields = {"properties": {"new_field": {"type": "SINGLE_LINE_TEXT", "code": "new_field", "label": "New Field"}}}
+        result = create_kintone_app(app_name=app_name, form_fields=form_fields)
+        print(f"App creation successful: {result}")
     except Exception as e:
-        print(f"Test failed: {e}")
+        print(f"App creation failed: {e}")
     # mcp.run()
