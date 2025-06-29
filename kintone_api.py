@@ -65,4 +65,4 @@ def get_app_revision(app_id: int) -> int:
         "GET",
         f"/k/v1/preview/app/status.json?app={app_id}"
     )
-    return int(res["revision"])
+    return int(res["apps"][0]["revision"])
