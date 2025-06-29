@@ -78,14 +78,20 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
         revision = get_app_revision(app_id)
         if form_fields:
             # フォーム設定の更新
-            if "properties" not in form_fields:
-                if not form_fields:
-                    raise ValueError("form_fields が空です")
-                form_payload = {"app": app_id, "properties": form_fields} # "revision": revision
-            else:
-                if not form_fields["properties"]:
-                    raise ValueError("form_fields.properties が空です")
-                form_payload = {"app": app_id, "properties": form_fields["properties"]} # "revision": revision
+            if form_fields:
+            # 現在のフォームフィールド定義を取得
+            current_form_fields = get_form_fields(app_id)
+            
+            # 新しいフィールド定義をマージ
+            merged_form_fields = current_form_fields.copy()
+            merged_form_fields.update(form_fields.get("properties") or form_fields)
+
+            # フォーム設定の更新
+            form_payload = {
+                "app": app_id,
+                "revision": revision,
+                "properties": merged_form_fields
+            }
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
@@ -122,8 +128,8 @@ if __name__ == "__main__":
 
     print(f"Testing update_kintone_app for app_id: {TEST_APP_ID}")
     try:
-        # テキストフィールドを追加する例
-        test_form_fields = {"properties": {"foo": {"type": "SINGLE_LINE_TEXT", "code": "foo", "label": "Foo"}}}
+        # 既存のテキストフィールドのラベルを変更する例
+        test_form_fields = {"properties": {"文字列_1行": {"type": "SINGLE_LINE_TEXT", "code": "文字列_1行", "label": "Updated Text Field"}}}
         result = update_kintone_app(app_id=TEST_APP_ID, form_fields=test_form_fields)
         print(f"Test successful: {result}")
     except Exception as e:

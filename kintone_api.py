@@ -25,7 +25,7 @@ def _get_kintone_headers(method):
         headers['X-Cybozu-API-Token'] = KINTONE_API_TOKEN
     return headers
 
-def kintone_request(method, path, json=None):
+def kintone_request(method, path, json=None, params=None):
     if not KINTONE_SUBDOMAIN:
         raise ValueError("KINTONE_SUBDOMAIN is not set in environment variables.")
 
@@ -63,7 +63,8 @@ def get_app_revision(app_id: int) -> int:
     # プレビュー環境の現在リビジョンを取得
     res = kintone_request(
         "GET",
-        f"/k/v1/preview/app/status.json?app={app_id}"
+        "/k/v1/preview/app/status.json",
+        params={'app': app_id}
     )
     print(f"DEBUG: get_app_revision response: {res}")
     if "apps" in res and len(res["apps"]) > 0:
@@ -72,3 +73,14 @@ def get_app_revision(app_id: int) -> int:
         return int(res["revision"])
     else:
         raise RuntimeError(f"Revision not found in response: {res}")
+
+def get_form_fields(app_id: int) -> dict:
+    """
+    指定されたアプリのフォームフィールド定義を取得します。
+    """
+    res = kintone_request(
+        "GET",
+        "/k/v1/preview/app/form/fields.json",
+        params={'app': app_id}
+    )
+    return res.get("properties", {})
