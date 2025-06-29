@@ -35,9 +35,9 @@ def kintone_request(method, path, json=None):
 
     try:
         if method in ['GET', 'DELETE']:
-            response = requests.request(method, url, headers=headers, timeout=30)
+            response = requests.request(method, url, headers=headers, params=params, timeout=30)
         else:
-            response = requests.request(method, url, headers=headers, json=json, timeout=30)
+            response = requests.request(method, url, headers=headers, json=json, params=params, timeout=30)
         response.raise_for_status()  # HTTPエラーが発生した場合に例外を発生させる
         return response.json()
     except requests.exceptions.HTTPError as e:
@@ -65,4 +65,10 @@ def get_app_revision(app_id: int) -> int:
         "GET",
         f"/k/v1/preview/app/status.json?app={app_id}"
     )
-    return int(res["apps"][0]["revision"])
+    print(f"DEBUG: get_app_revision response: {res}")
+    if "apps" in res and len(res["apps"]) > 0:
+        return int(res["apps"][0]["revision"])
+    elif "revision" in res:
+        return int(res["revision"])
+    else:
+        raise RuntimeError(f"Revision not found in response: {res}")

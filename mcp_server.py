@@ -29,10 +29,10 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         app_id = response.get('app')
 
         if form_fields:
+            if not form_fields.get("properties"):
+                raise ValueError("form_fields.properties が空です")
             # フォーム設定の更新
             form_payload = {"app": app_id, "properties": form_fields.get("properties", {})}
-            if not form_payload["properties"]:
-                raise ValueError("form_fields.properties が空です")
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
