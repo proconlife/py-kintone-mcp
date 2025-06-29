@@ -25,8 +25,8 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         "name": app_name
     }
     try:
-        response = kintone_request('POST', '/k/v1/preview/app.json', json=payload)
-        app_id = response.get('app')
+        response = kintone_request("POST", "/k/v1/preview/app.json", json=payload)
+        app_id = response.get("app")
         print(f"DEBUG: create_kintone_app app_id: {app_id}")
 
         if form_fields:
@@ -34,23 +34,23 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
                 raise ValueError("form_fields.properties が空です")
             # フォーム設定の更新
             form_payload = {"app": app_id, "properties": form_fields.get("properties", {})}
-            kintone_request('POST', '/k/v1/preview/app/form/fields.json', json=form_payload)
+            kintone_request("POST", "/k/v1/preview/app/form/fields.json", json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
             permission_payload = {"app": app_id, "rights": app_permissions}
-            kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
+            kintone_request("PUT", "/k/v1/preview/app/acl.json", json=permission_payload)
 
         # アプリの公開
-        deploy_payload = {"apps": [{"app": app_id}]}
-        kintone_request('POST', '/k/v1/preview/app/deploy.json', json=deploy_payload)
+        deploy_payload = {"apps": [{"app": app_id, "revision": 1}]}
+        kintone_request("POST", "/k/v1/preview/app/deploy.json", json=deploy_payload)
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request('GET', '/k/v1/preview/app/deploy.json', params={'app': app_id})
-            if deploy_status['apps'][0]['status'] == 'SUCCESS':
+            deploy_status = kintone_request("GET", "/k/v1/preview/app/deploy.json", params={"app": app_id})
+            if deploy_status["apps"][0]["status"] == "SUCCESS":
                 break
-            elif deploy_status['apps'][0]['status'] == 'FAIL':
+            elif deploy_status["apps"][0]["status"] == "FAIL":
                 raise Exception("App deployment failed.")
             import time
             time.sleep(5) # 5秒待機
@@ -91,7 +91,7 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
                 "revision": revision,
                 "properties": merged_form_fields
             }
-            kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
+            kintone_request("PUT", "/k/v1/preview/app/form/fields.json", json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
@@ -100,18 +100,18 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
                 "revision": revision,
                 "rights": (app_permissions.get("rights") or app_permissions)
             }
-            kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
+            kintone_request("PUT", "/k/v1/preview/app/acl.json", json=permission_payload)
 
         # アプリの公開
         deploy_payload = {"apps": [{"app": app_id}]}
-        kintone_request('POST', '/k/v1/preview/app/deploy.json', json=deploy_payload)
+        kintone_request("POST", "/k/v1/preview/app/deploy.json", json=deploy_payload)
 
         # デプロイ完了のポーリング
         while True:
-            deploy_status = kintone_request('GET', '/k/v1/preview/app/deploy.json', params={'app': app_id})
-            if deploy_status['apps'][0]['status'] == 'SUCCESS':
+            deploy_status = kintone_request("GET", "/k/v1/preview/app/deploy.json", params={"app": app_id})
+            if deploy_status["apps"][0]["status"] == "SUCCESS":
                 break
-            elif deploy_status['apps'][0]['status'] == 'FAIL':
+            elif deploy_status["apps"][0]["status"] == "FAIL":
                 raise Exception("App deployment failed.")
             import time
             time.sleep(5) # 5秒待機
