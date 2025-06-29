@@ -27,6 +27,7 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
     try:
         response = kintone_request('POST', '/k/v1/preview/app.json', json=payload)
         app_id = response.get('app')
+        print(f"DEBUG: create_kintone_app app_id: {app_id}")
 
         if form_fields:
             if not form_fields.get("properties"):
