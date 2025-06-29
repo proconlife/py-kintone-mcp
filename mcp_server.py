@@ -31,6 +31,8 @@ def create_kintone_app(app_name: str, form_fields: dict = None, app_permissions:
         if form_fields:
             # フォーム設定の更新
             form_payload = {"app": app_id, "properties": form_fields.get("properties", {})}
+            if not form_payload["properties"]:
+                raise ValueError("form_fields.properties が空です")
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
@@ -77,17 +79,21 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
         if form_fields:
             # フォーム設定の更新
             if "properties" not in form_fields:
-                form_payload = {"app": app_id, "properties": form_fields, "revision": revision}
+                if not form_fields:
+                    raise ValueError("form_fields が空です")
+                form_payload = {"app": app_id, "properties": form_fields} # "revision": revision
             else:
-                form_payload = {"app": app_id, "properties": form_fields["properties"], "revision": revision}
+                if not form_fields["properties"]:
+                    raise ValueError("form_fields.properties が空です")
+                form_payload = {"app": app_id, "properties": form_fields["properties"]} # "revision": revision
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
             if "rights" not in app_permissions:
-                permission_payload = {"app": app_id, "rights": app_permissions, "revision": revision}
+                permission_payload = {"app": app_id, "rights": app_permissions} # "revision": revision
             else:
-                permission_payload = {"app": app_id, "rights": app_permissions["rights"], "revision": revision}
+                permission_payload = {"app": app_id, "rights": app_permissions["rights"]} # "revision": revision
             kintone_request('PUT', '/k/v1/preview/app/acl.json', json=permission_payload)
 
         # アプリの公開
@@ -110,4 +116,15 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
         raise
 
 if __name__ == "__main__":
-    mcp.run()
+    # テスト用のapp_idを設定してください
+    TEST_APP_ID = 52 # 実際のアプリIDに置き換えてください
+
+    print(f"Testing update_kintone_app for app_id: {TEST_APP_ID}")
+    try:
+        # テキストフィールドを追加する例
+        test_form_fields = {"properties": {"foo": {"type": "SINGLE_LINE_TEXT", "code": "foo", "label": "Foo"}}}
+        result = update_kintone_app(app_id=TEST_APP_ID, form_fields=test_form_fields)
+        print(f"Test successful: {result}")
+    except Exception as e:
+        print(f"Test failed: {e}")
+    # mcp.run()

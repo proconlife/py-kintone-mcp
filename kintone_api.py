@@ -59,27 +59,10 @@ def kintone_request(method, path, json=None):
         print(f"Request Error: {e}")
         raise
 
-def get_app_revision(app_id: int) -> str:
-    """
-    Return the current revision of the app settings that are LIVE.
-    Falls back to preview if live settings are locked.
-    """
-    base = f"https://{KINTONE_SUBDOMAIN}.{KINTONE_DOMAIN}/k"
-    headers = _get_kintone_headers("GET")
-    for path in ("/v1/app/status.json",  # live
-                 "/v1/preview/app/status.json"):  # pre-deploy
-        resp = requests.get(
-            f"{base}{path}",
-            headers=headers,
-            params={"app": app_id},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if "revision" in data:           # formally defined key
-            return data["revision"]
-
-    raise RuntimeError(
-        f"Revision not found for app {app_id}. "
-        f"Response bodies: {data}"
+def get_app_revision(app_id: int) -> int:
+    # プレビュー環境の現在リビジョンを取得
+    res = kintone_request(
+        "GET",
+        f"/k/v1/preview/app/status.json?app={app_id}"
     )
+    return int(res["revision"])
