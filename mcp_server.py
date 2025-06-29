@@ -93,6 +93,7 @@ def update_kintone_app(app_id: int, form_fields: dict = None, app_permissions: d
                 "properties": merged_form_fields
             }
             kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
+            kintone_request('PUT', '/k/v1/preview/app/form/fields.json', json=form_payload)
 
         if app_permissions:
             # アプリ権限の更新
